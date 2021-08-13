@@ -24,8 +24,13 @@ func main() {
 
 	router := gin.Default()
 	api := router.Group("/api/v1")
+
+	/**
+	* Auth Sevices
+	 */
 	api.POST("/auth/register", userControllers.RegisterUser)
 	api.POST("/auth/sessions", userControllers.Login)
+	api.POST("/auth/check-email", userControllers.CheckEmailExists)
 
 	router.Run()
 }

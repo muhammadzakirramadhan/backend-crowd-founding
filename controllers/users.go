@@ -73,3 +73,42 @@ func (h *userControllers) Login(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 
 }
+
+func (h *userControllers) CheckEmailExists(c *gin.Context) {
+	var input users.CheckEmailInput
+
+	err := c.ShouldBindJSON(&input)
+	if err != nil {
+		errors := helper.FormatValidationError(err)
+		errorMessage := gin.H{"errors": errors}
+
+		response := helper.APIResponse("Checking email failed", http.StatusUnprocessableEntity, "error", errorMessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	IsEmailExists, err := h.userService.IsEmailExists(input)
+
+	if err != nil {
+		errorMessage := gin.H{"errors": "Internal Error"}
+
+		response := helper.APIResponse("Checking email failed", http.StatusUnprocessableEntity, "error", errorMessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	data := gin.H{
+		"is_exists": IsEmailExists,
+	}
+
+	var metaMessage string
+
+	if IsEmailExists {
+		metaMessage = "Email Avaliable"
+	} else {
+		metaMessage = "Email Exists"
+	}
+
+	response := helper.APIResponse(metaMessage, http.StatusOK, "success", data)
+	c.JSON(http.StatusUnprocessableEntity, response)
+}
