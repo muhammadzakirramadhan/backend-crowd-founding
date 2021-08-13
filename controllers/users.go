@@ -3,6 +3,7 @@ package controllers
 import (
 	"backend-crowd-funding/helper"
 	"backend-crowd-funding/users"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -62,7 +63,7 @@ func (h *userControllers) Login(c *gin.Context) {
 
 	if err != nil {
 		errorMessage := gin.H{"errors": err.Error()}
-		response := helper.APIResponse("Register account failed", http.StatusBadRequest, "error", errorMessage)
+		response := helper.APIResponse("Login failed", http.StatusBadRequest, "error", errorMessage)
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
@@ -98,17 +99,57 @@ func (h *userControllers) CheckEmailExists(c *gin.Context) {
 	}
 
 	data := gin.H{
-		"is_exists": IsEmailExists,
+		"is_available": IsEmailExists,
 	}
 
 	var metaMessage string
+	metaMessage = "Email Exists"
 
 	if IsEmailExists {
 		metaMessage = "Email Avaliable"
-	} else {
-		metaMessage = "Email Exists"
 	}
 
 	response := helper.APIResponse(metaMessage, http.StatusOK, "success", data)
 	c.JSON(http.StatusUnprocessableEntity, response)
+}
+
+func (h *userControllers) UploadAvatar(c *gin.Context) {
+	file, err := c.FormFile("avatar")
+
+	if err != nil {
+		errorMessage := gin.H{"is_uploaded": false}
+
+		response := helper.APIResponse("Failed upload avatar", http.StatusBadRequest, "error", errorMessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	// path := "images/" + file.Filename
+	userID := 1
+	path := fmt.Sprintf("images/%d-%s", userID, file.Filename)
+
+	err = c.SaveUploadedFile(file, path)
+	if err != nil {
+		errorMessage := gin.H{"is_uploaded": false}
+
+		response := helper.APIResponse("Failed upload avatar", http.StatusBadRequest, "error", errorMessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+	_, err = h.userService.SaveAvatar(userID, path)
+
+	if err != nil {
+		errorMessage := gin.H{"is_uploaded": false}
+
+		response := helper.APIResponse("Failed upload avatar", http.StatusBadRequest, "error", errorMessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	data := gin.H{
+		"is_uploaded": true,
+	}
+
+	response := helper.APIResponse("Avatar succesfuly upload", http.StatusOK, "success", data)
+	c.JSON(http.StatusOK, response)
 }

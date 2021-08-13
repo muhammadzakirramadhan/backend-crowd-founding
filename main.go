@@ -32,5 +32,7 @@ func main() {
 	api.POST("/auth/sessions", userControllers.Login)
 	api.POST("/auth/check-email", userControllers.CheckEmailExists)
 
+	api.POST("/services/users/avatar", userControllers.UploadAvatar)
+
 	router.Run()
 }
