@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"backend-crowd-funding/auth"
 	"backend-crowd-funding/helper"
 	"backend-crowd-funding/users"
 	"fmt"
@@ -11,10 +12,11 @@ import (
 
 type userControllers struct {
 	userService users.Service
+	authService auth.Service
 }
 
-func NewUserControllers(userService users.Service) *userControllers {
-	return &userControllers{userService}
+func NewUserControllers(userService users.Service, authService auth.Service) *userControllers {
+	return &userControllers{userService, authService}
 }
 
 func (h *userControllers) RegisterUser(c *gin.Context) {
@@ -40,7 +42,15 @@ func (h *userControllers) RegisterUser(c *gin.Context) {
 		return
 	}
 
-	formatter := users.FormatUser(newUser, "token")
+	token, err := h.authService.GenerateToken(newUser.ID)
+	if err != nil {
+		errorMessage := gin.H{"errors": err.Error()}
+		response := helper.APIResponse("Register account failed", http.StatusBadRequest, "error", errorMessage)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	formatter := users.FormatUser(newUser, token)
 	response := helper.APIResponse("Account has been registered", http.StatusOK, "success", formatter)
 
 	c.JSON(http.StatusOK, response)
@@ -68,7 +78,15 @@ func (h *userControllers) Login(c *gin.Context) {
 		return
 	}
 
-	formatter := users.FormatUser(loggedinUser, "token")
+	token, err := h.authService.GenerateToken(loggedinUser.ID)
+	if err != nil {
+		errorMessage := gin.H{"errors": err.Error()}
+		response := helper.APIResponse("Login failed", http.StatusBadRequest, "error", errorMessage)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	formatter := users.FormatUser(loggedinUser, token)
 	response := helper.APIResponse("Successfuly Loggedin", http.StatusOK, "success", formatter)
 
 	c.JSON(http.StatusOK, response)
