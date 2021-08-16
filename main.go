@@ -31,9 +31,11 @@ func main() {
 	// service
 	userService := users.NewService(userRepository)
 	authService := auth.NewService()
+	campaignService := campaign.NewService(campaignRepository)
 
 	// controllers
 	userControllers := controllers.NewUserControllers(userService, authService)
+	campaignControllers := controllers.NewCampaignControllers(campaignService)
 
 	router := gin.Default()
 	api := router.Group("/api/v1")
@@ -50,7 +52,12 @@ func main() {
 	 */
 	api.POST("/services/users/avatar", authMiddleWare(authService, userService), userControllers.UploadAvatar)
 
-	router.Run(":5000")
+	/*
+	* Campaigns Service
+	 */
+	api.GET("/services/campaigns", campaignControllers.GetCampaigns)
+
+	router.Run(":8080")
 }
 
 func authMiddleWare(authService auth.Service, userService users.Service) gin.HandlerFunc {
