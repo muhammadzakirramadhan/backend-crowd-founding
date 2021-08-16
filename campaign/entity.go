@@ -1,6 +1,9 @@
 package campaign
 
-import "time"
+import (
+	"backend-crowd-funding/users"
+	"time"
+)
 
 type Campaign struct {
 	ID               int
@@ -16,6 +19,7 @@ type Campaign struct {
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
 	CampaignImages   []CampaignImages
+	Users            users.Users `gorm:"foreignKey:ID"`
 }
 
 type CampaignImages struct {

@@ -58,6 +58,7 @@ func main() {
 	* Campaigns Service
 	 */
 	api.GET("/services/campaigns", campaignControllers.GetCampaigns)
+	api.GET("/services/campaigns/:id", campaignControllers.GetCampaign)
 
 	router.Run(":8080")
 }
