@@ -2,6 +2,7 @@ package main
 
 import (
 	"backend-crowd-funding/auth"
+	"backend-crowd-funding/campaign"
 	"backend-crowd-funding/controllers"
 	"backend-crowd-funding/helper"
 	"backend-crowd-funding/users"
@@ -23,10 +24,15 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
+	// Repository
 	userRepository := users.NewRepository(db)
+	campaignRepository := campaign.NewRepository(db)
+
+	// service
 	userService := users.NewService(userRepository)
 	authService := auth.NewService()
 
+	// controllers
 	userControllers := controllers.NewUserControllers(userService, authService)
 
 	router := gin.Default()
@@ -44,7 +50,7 @@ func main() {
 	 */
 	api.POST("/services/users/avatar", authMiddleWare(authService, userService), userControllers.UploadAvatar)
 
-	router.Run()
+	router.Run(":5000")
 }
 
 func authMiddleWare(authService auth.Service, userService users.Service) gin.HandlerFunc {
