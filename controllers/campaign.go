@@ -4,6 +4,7 @@ import (
 	"backend-crowd-funding/campaign"
 	"backend-crowd-funding/helper"
 	"backend-crowd-funding/users"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -114,5 +115,60 @@ func (h *campaignControllers) UpdateCampaign(c *gin.Context) {
 	}
 
 	response := helper.APIResponse("Success updated campaign", http.StatusOK, "success", campaign.FormatCampaignDetail(updatedCampaign))
+	c.JSON(http.StatusOK, response)
+}
+
+func (h *campaignControllers) UploadImage(c *gin.Context) {
+	var input campaign.CreateCampaignImage
+
+	err := c.ShouldBind(&input)
+
+	if err != nil {
+		errors := helper.FormatValidationError(err)
+		errorMessage := gin.H{"errors": errors}
+		response := helper.APIResponse("Failed upload campaign image", http.StatusUnprocessableEntity, "error", errorMessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	file, err := c.FormFile("file")
+	if err != nil {
+		errorMessage := gin.H{"is_uploaded": false}
+
+		response := helper.APIResponse("Failed upload campaign image", http.StatusBadRequest, "error", errorMessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	currentUser := c.MustGet("currentUser").(users.Users)
+	input.User = currentUser
+	userID := currentUser.ID
+
+	path := fmt.Sprintf("images/campaigns/%d-%d-%s", userID, input.CampaignID, file.Filename)
+
+	err = c.SaveUploadedFile(file, path)
+	if err != nil {
+		errorMessage := gin.H{"is_uploaded": false}
+
+		response := helper.APIResponse("Failed upload campaign image", http.StatusBadRequest, "error", errorMessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	_, err = h.service.SaveCampaignImage(input, path)
+
+	if err != nil {
+		errorMessage := gin.H{"is_uploaded": false}
+
+		response := helper.APIResponse("Failed upload campaign image", http.StatusBadRequest, "error", errorMessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	data := gin.H{
+		"is_uploaded": true,
+	}
+
+	response := helper.APIResponse("Campaign images succesfuly upload", http.StatusOK, "success", data)
 	c.JSON(http.StatusOK, response)
 }

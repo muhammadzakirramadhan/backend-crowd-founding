@@ -144,7 +144,7 @@ func (h *userControllers) UploadAvatar(c *gin.Context) {
 
 	currentUser := c.MustGet("currentUser").(users.Users)
 	userID := currentUser.ID
-	path := fmt.Sprintf("images/%d-%s", userID, file.Filename)
+	path := fmt.Sprintf("images/avatar/%d-%s", userID, file.Filename)
 
 	err = c.SaveUploadedFile(file, path)
 	if err != nil {
