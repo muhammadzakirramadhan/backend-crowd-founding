@@ -71,6 +71,7 @@ func main() {
 	* Transaction Campaigns
 	 */
 	api.GET("/services/campaigns/:id/transactions", authMiddleWare(authService, userService), transactionsController.GetCampaignTransactions)
+	api.GET("/services/transactions", authMiddleWare(authService, userService), transactionsController.GetUserTransactions)
 
 	router.Run(":8080")
 }
