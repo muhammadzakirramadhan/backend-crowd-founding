@@ -5,6 +5,7 @@ import (
 	"backend-crowd-funding/campaign"
 	"backend-crowd-funding/controllers"
 	"backend-crowd-funding/helper"
+	"backend-crowd-funding/transaction"
 	"backend-crowd-funding/users"
 	"log"
 	"net/http"
@@ -27,15 +28,18 @@ func main() {
 	// Repository
 	userRepository := users.NewRepository(db)
 	campaignRepository := campaign.NewRepository(db)
+	transactionRepository := transaction.NewRepository(db)
 
 	// service
 	userService := users.NewService(userRepository)
 	authService := auth.NewService()
 	campaignService := campaign.NewService(campaignRepository)
+	transactionService := transaction.NewService(transactionRepository, campaignRepository)
 
 	// controllers
 	userControllers := controllers.NewUserControllers(userService, authService)
 	campaignControllers := controllers.NewCampaignControllers(campaignService)
+	transactionsController := controllers.NewTransactionController(transactionService)
 
 	router := gin.Default()
 	router.Static("/images", "./images")
@@ -62,6 +66,11 @@ func main() {
 	api.POST("/services/campaigns", authMiddleWare(authService, userService), campaignControllers.CreateCampaign)
 	api.PUT("/services/campaigns/:id", authMiddleWare(authService, userService), campaignControllers.UpdateCampaign)
 	api.POST("/services/campaign-images", authMiddleWare(authService, userService), campaignControllers.UploadImage)
+
+	/*
+	* Transaction Campaigns
+	 */
+	api.GET("/services/campaigns/:id/transactions", authMiddleWare(authService, userService), transactionsController.GetCampaignTransactions)
 
 	router.Run(":8080")
 }
