@@ -5,6 +5,7 @@ import (
 	"backend-crowd-funding/campaign"
 	"backend-crowd-funding/controllers"
 	"backend-crowd-funding/helper"
+	"backend-crowd-funding/payment"
 	"backend-crowd-funding/transaction"
 	"backend-crowd-funding/users"
 	"log"
@@ -31,10 +32,11 @@ func main() {
 	transactionRepository := transaction.NewRepository(db)
 
 	// service
+	paymentService := payment.NewService()
 	userService := users.NewService(userRepository)
 	authService := auth.NewService()
 	campaignService := campaign.NewService(campaignRepository)
-	transactionService := transaction.NewService(transactionRepository, campaignRepository)
+	transactionService := transaction.NewService(transactionRepository, campaignRepository, paymentService)
 
 	// controllers
 	userControllers := controllers.NewUserControllers(userService, authService)
@@ -72,6 +74,7 @@ func main() {
 	 */
 	api.GET("/services/campaigns/:id/transactions", authMiddleWare(authService, userService), transactionsController.GetCampaignTransactions)
 	api.GET("/services/transactions", authMiddleWare(authService, userService), transactionsController.GetUserTransactions)
+	api.POST("/services/transactions", authMiddleWare(authService, userService), transactionsController.CreateTransaction)
 
 	router.Run(":8080")
 }
