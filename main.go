@@ -61,7 +61,7 @@ func main() {
 	* User Services
 	 */
 	api.POST("/services/users/avatar", authMiddleWare(authService, userService), userControllers.UploadAvatar)
-
+	api.GET("/services/user/fetch", authMiddleWare(authService, userService), userControllers.FetchUser)
 	/*
 	* Campaigns Service
 	 */
