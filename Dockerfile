@@ -4,5 +4,5 @@ WORKDIR /app/crowdfunding/backend
 COPY . .
 RUN go mod tidy
 RUN go build -o server
-ENTRYPOINT ["/app/crowdfunding/backendserver"]
+ENTRYPOINT ["/app/crowdfunding/backend/server"]
 
